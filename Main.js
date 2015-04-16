@@ -5,9 +5,8 @@ var gamescreen = document.createElement("canvas");
 var canvas = document.getElementById("myCanvas"),
     c = canvas.getContext("2d");
     
-    document.body.style.overflow = "hidden";
-    window.scrollTo(0, 0);
-
+window.scrollTo(0, 0);
+document.body.style.overflow = "hidden";
 canvas.width = window.innerWidth;
 canvas.height = window.innerHeight;
 canvas.style.position = 'absolute';
