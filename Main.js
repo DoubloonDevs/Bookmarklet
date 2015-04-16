@@ -1,1 +1,337 @@
-function gameLoop(){update(),render()}function render(){c.clearRect(0,0,width,height);for(var t=0;t<bullets.length;t++){var e=bullets[t];e.update(),e.display(),e.alive||(particles.push(new Particle(e.pos.x,e.pos.y,2,2,"hsl("+random(0,360)+", 100%, 50%)")),bullets.splice(t,1))}for(var t=0;t<enemies.length;t++){var s=enemies[t];s.update(),s.display(),s.alive||enemies.splice(t,1),collisionBetween(enemies[t],player)}for(var t=0;t<particles.length;t++){var i=particles[t];i.update(),i.display(),i.alive||particles.splice(t,1)}player.display()}function update(){if(arrayCollision(bullets,enemies),cursor.update(),player.update(),spawn_timer--,1>spawn_timer){var t=random(16,64);enemies.push(new Enemy(random(100,width-100),random(100,height-100),t,t,t/2)),spawn_timer=spawn_time}}function Player(t,e,s,i){this.pos=new Vector(t,e),this.velocity=new Vector,this.width=s,this.height=i,this.angle=0,this.speed=6,this.behaviour="player",this.update=function(){this.pos.add(this.velocity),this.velocity.dampen(.875),leftPressed&&this.velocity.x>-this.speed&&this.velocity.x--,rightPressed&&this.velocity.x<this.speed&&this.velocity.x++,upPressed&&this.velocity.y>-this.speed&&this.velocity.y--,downPressed&&this.velocity.y<this.speed&&this.velocity.y++;var t=canvas.mouseX-this.pos.x,e=canvas.mouseY-this.pos.y;this.angle=Math.atan2(e,t),mouseDown&&bullets.push(new Bullet(this,5,5,7,.25,"hsl("+random(0,360)+", 100%, 50%)"))},this.display=function(){c.fillStyle="grey",c.save(),c.translate(this.pos.x,this.pos.y),c.rotate(this.angle),c.fillRect(-this.width/2,-this.height/2,this.width,this.height),c.restore()}}function Bullet(t,e,s,i,h,o){this.pos=new Vector(t.pos.x,t.pos.y),this.velocity=new Vector,this.velocity.x=Math.cos(t.angle)*i+random(-h,h),this.velocity.y=Math.sin(t.angle)*i+random(-h,h),this.width=e,this.height=s,this.angle=t.angle,this.alive=!0,this.fill=o,this.behaviour="bullet",this.update=function(){this.pos.add(this.velocity),(this.pos.x>width||this.pos.y>height||this.pos.x<=0||this.pos.y<=0)&&(this.alive=!1)},this.display=function(){c.fillStyle=this.fill,c.save(),c.translate(this.pos.x,this.pos.y),c.rotate(this.angle),c.fillRect(-this.width/2,-this.height/2,this.width,this.height),c.restore()}}function Enemy(t,e,s,i,h,o){this.pos=new Vector(t,e),this.width=s,this.height=i,this.velocity=new Vector,this.alive=!0,this.health=s,this.speed=o||random(1,4),this.angle=0,this.behaviour="enemy",this.update=function(){this.pos.add(this.velocity),this.velocity.dampen(.875);var t=player.pos.x-this.pos.x,e=player.pos.y-this.pos.y;this.angle=Math.atan2(e,t),this.velocity.x+=Math.cos(this.angle)/this.speed,this.velocity.y+=Math.sin(this.angle)/this.speed,this.width=this.health,this.height=this.health,this.health<5&&(this.alive=!1)},this.display=function(){c.fillStyle="black",c.save(),c.translate(this.pos.x,this.pos.y),c.rotate(this.angle),c.fillRect(-this.width/2,-this.height/2,this.width,this.height),c.restore()}}function Particle(t,e,s,i,h){this.pos=new Vector(t,e),this.velocity=new Vector(random(-2,2),random(-2,2)),this.width=s,this.height=i,this.health=15,this.alive=!0,this.fill=h,this.update=function(){this.pos.add(this.velocity),this.velocity.x*=.875,this.velocity.y+=.3,this.health--,this.health<1&&(this.alive=!1)},this.display=function(){c.fillStyle=this.fill,c.save(),c.translate(this.pos.x,this.pos.y),c.fillRect(-this.width/2,-this.height/2,this.width,this.height),c.restore()}}function Cursor(t){this.pos=new Vector,this.visible=t,this.update=function(){this.pos.x=canvas.mouseX,this.pos.y=canvas.mouseY}}function Vector(t,e){this.x=t||0,this.y=e||0,this.add=function(t){this.x+=t.x,this.y+=t.y},this.dampen=function(t){this.x*=t,this.y*=t}}function random(t,e){return Math.random()*(e-t)+t}function arrayCollision(t,e){for(var s=1;s<t.length;s++)for(var i=t[s],h=0;h<e.length;h++){var o=e[h],n=o.pos.x-i.pos.x,a=o.pos.y-i.pos.y;Math.sqrt(n*n+a*a)<5*i.width&&collisionBetween(i,o)}}function collisionBetween(t,e){var s=t.pos.x-e.pos.x,i=t.pos.y-e.pos.y,h=t.width/2+e.width/2,o=t.height/2+e.height/2;if(Math.abs(s)<h&&Math.abs(i)<o){"player"==e.behaviour&&(player.health-=.05),"bullet"==t.behaviour&&(t.alive=!1,e.health-=2,e.speed>1&&(e.speed-=.05)),t.velocity.dampen(.5);var n=h-Math.abs(s),a=o-Math.abs(i);n>=a?i>0?t.pos.y+=a-t.velocity.y:t.pos.y-=a+t.velocity.y:s>0?t.pos.x+=n-t.velocity.x:t.pos.x-=n+t.velocity.x}}function getMousePos(t,e){var s=t.getBoundingClientRect();return{x:e.pageX-s.left,y:e.pageY-s.top}}var gamescreen=document.createElement("canvas");gamescreen.id="myCanvas",document.body.id="body",document.body.appendChild(gamescreen);var canvas=document.getElementById("myCanvas"),c=canvas.getContext("2d");document.body.style.overflow="hidden",window.scrollTo(0,0),canvas.width=window.innerWidth,canvas.height=window.innerHeight,canvas.style.position="absolute",canvas.style.top=0;var width,height,mouseDown=!1,upPressed=!1,leftPressed=!1,downPressed=!1,rightPressed=!1,player,cursor,bullets=[],particles=[],enemies=[],spawn_time,spawn_timer;!function(){width=canvas.width,height=canvas.height,spawn_time=40,spawn_timer=spawn_time,player=new Player(50,50,24,24),cursor=new Cursor}(),setInterval(gameLoop,1e3/60),document.onmousedown=function(){mouseDown=!0},document.onmouseup=function(){mouseDown=!1},document.ontouchstart=function(t){t.preventDefault(),mouseDown=!0},document.ontouchmove=function(t){t.preventDefault(),mouseDown=!0},document.ontouchend=function(t){t.preventDefault(),mouseDown=!1},document.onkeydown=function(t){87==t.keyCode&&(upPressed=!0),65==t.keyCode&&(leftPressed=!0),83==t.keyCode&&(downPressed=!0),68==t.keyCode&&(rightPressed=!0)},document.onkeyup=function(t){87==t.keyCode&&(upPressed=!1),65==t.keyCode&&(leftPressed=!1),83==t.keyCode&&(downPressed=!1),68==t.keyCode&&(rightPressed=!1)},window.onresize=function(){canvas.width=window.innerWidth,canvas.height=window.innerHeight,width=canvas.width,height=canvas.height},canvas.addEventListener("mousemove",function(t){var e=getMousePos(canvas,t);this.mouseX=e.x,this.mouseY=e.y},!0),canvas.addEventListener("touchmove",function(t){var e=getMousePos(canvas,t);this.mouseX=e.x,this.mouseY=e.y},!0);
+var gamescreen = document.createElement("canvas");
+    gamescreen.id = "myCanvas";
+    document.body.id = "body";
+    document.body.appendChild(gamescreen);
+var canvas = document.getElementById("myCanvas"),
+    c = canvas.getContext("2d");
+    
+    document.body.style.overflow = "hidden";
+    window.scrollTo(0, 0);
+
+canvas.width = window.innerWidth;
+canvas.height = window.innerHeight;
+canvas.style.position = 'absolute';
+canvas.style.top = 0;
+
+var width,
+  height;
+
+var mouseDown = false;
+
+var upPressed = false,
+  leftPressed = false,
+  downPressed = false,
+  rightPressed = false;
+
+var player,
+    cursor;
+
+var bullets = [],
+    particles = [],
+    enemies = [];
+
+var spawn_time,
+    spawn_timer;
+
+(function setup() {
+  width = canvas.width;
+  height = canvas.height;
+  spawn_time = 40;
+  spawn_timer = spawn_time;
+  player = new Player(50, 50, 24, 24);
+  cursor = new Cursor();
+})();
+
+function gameLoop() {
+  update();
+  render();
+}
+setInterval(gameLoop, 1000 / 60);
+
+function render() {
+  c.clearRect(0, 0, width, height);
+  for (var i = 0; i < bullets.length; i++) {
+    var b = bullets[i];
+    b.update();
+    b.display();
+    if (!b.alive) {
+      particles.push(new Particle(b.pos.x, b.pos.y, 2, 2, 'hsl('+random(0, 360)+', 100%, 50%)'));
+      bullets.splice(i, 1);
+    }
+  }
+  for (var i = 0; i < enemies.length; i++) {
+    var en = enemies[i];
+    en.update();
+    en.display();
+    if (!en.alive) enemies.splice(i, 1);
+    collisionBetween(enemies[i], player);
+  }
+  for (var i = 0; i < particles.length; i++) {
+    var p = particles[i];
+    p.update();
+    p.display();
+    if (!p.alive) particles.splice(i, 1);
+  }
+  player.display();
+}
+
+function update() {
+  arrayCollision(bullets, enemies);
+  cursor.update();
+  player.update();
+  spawn_timer--;
+  if (spawn_timer < 1) {
+    var size = random(16, 64);
+    enemies.push(new Enemy(random(100, width - 100), random(100, height - 100), size, size, size / 2));
+    spawn_timer = spawn_time;
+  }
+}
+
+/*function animateBg(i) {
+  body.style.backgroundColor = 'hsl(' + i + ', 78%, 18%)';
+  setTimeout(function() {
+    animateBg(++i);
+  }, i);
+}
+animateBg(291);*/
+
+function Player(x, y, w, h) {
+  this.pos = new Vector(x, y);
+  this.velocity = new Vector();
+  this.width = w;
+  this.height = h;
+  this.angle = 0;
+  this.speed = 6;
+  this.behaviour = 'player';
+  this.update = function() {
+    this.pos.add(this.velocity);
+    this.velocity.dampen(0.875);
+
+    if (leftPressed && this.velocity.x > -this.speed) this.velocity.x--;
+    if (rightPressed && this.velocity.x < this.speed) this.velocity.x++;
+    if (upPressed && this.velocity.y > -this.speed) this.velocity.y--;
+    if (downPressed && this.velocity.y < this.speed) this.velocity.y++;
+
+    var dx = canvas.mouseX - this.pos.x,
+      dy = canvas.mouseY - this.pos.y;
+    this.angle = Math.atan2(dy, dx);
+
+    if (mouseDown) bullets.push(new Bullet(this, 5, 5, 7, 0.25, 'hsl('+random(0, 360)+', 100%, 50%)'));
+  }
+  this.display = function() {
+    c.fillStyle = 'grey';
+    c.save();
+    c.translate(this.pos.x, this.pos.y);
+    c.rotate(this.angle);
+    c.fillRect(-this.width / 2, -this.height / 2, this.width, this.height);
+    c.restore();
+  }
+}
+
+function Bullet(parent, w, h, speed, spread, fill) {
+  this.pos = new Vector(parent.pos.x, parent.pos.y);
+  this.velocity = new Vector();
+  this.velocity.x = (Math.cos(parent.angle) * speed) + random(-spread, spread);
+  this.velocity.y = (Math.sin(parent.angle) * speed) + random(-spread, spread);
+  this.width = w;
+  this.height = h;
+  this.angle = parent.angle;
+  this.alive = true;
+  this.fill = fill;
+  this.behaviour = 'bullet';
+  this.update = function() {
+    this.pos.add(this.velocity);
+    if (this.pos.x > width || this.pos.y > height || this.pos.x <= 0 || this.pos.y <= 0) this.alive = false;
+  }
+  this.display = function() {
+    c.fillStyle = this.fill;
+    c.save();
+    c.translate(this.pos.x, this.pos.y);
+    c.rotate(this.angle);
+    c.fillRect(-this.width / 2, -this.height / 2, this.width, this.height);
+    c.restore();
+  }
+}
+
+function Enemy(x, y, w, h, health, speed) {
+  this.pos = new Vector(x, y);
+  this.width = w;
+  this.height = h;
+  this.velocity = new Vector();
+  this.alive = true;
+  this.health = w;
+  this.speed = speed || random(1, 4);
+  this.angle = 0;
+  this.behaviour = 'enemy';
+  this.update = function() {
+    this.pos.add(this.velocity);
+    this.velocity.dampen(0.875);
+
+    var dx = player.pos.x - this.pos.x,
+      dy = player.pos.y - this.pos.y;
+    this.angle = Math.atan2(dy, dx);
+
+    this.velocity.x += Math.cos(this.angle) / this.speed;
+    this.velocity.y += Math.sin(this.angle) / this.speed;
+
+    this.width = this.health;
+    this.height = this.health;
+
+    if (this.health < 5) this.alive = false;
+  }
+  this.display = function() {
+    c.fillStyle = 'black';
+    c.save();
+    c.translate(this.pos.x, this.pos.y);
+    c.rotate(this.angle);
+    c.fillRect(-this.width / 2, -this.height / 2, this.width, this.height);
+    c.restore();
+  }
+}
+
+function Particle(x, y, w, h, fill) {
+  this.pos = new Vector(x, y);
+  this.velocity = new Vector(random(-2, 2), random(-2, 2));
+  this.width = w;
+  this.height = h;
+  this.health = 15;
+  this.alive = true;
+  this.fill = fill;
+  this.update = function() {
+    this.pos.add(this.velocity);
+    this.velocity.x *= 0.875;
+    this.velocity.y += 0.3;
+    this.health--;
+    if (this.health < 1) this.alive = false;
+  }
+  this.display = function() {
+    c.fillStyle = this.fill;
+    c.save();
+    c.translate(this.pos.x, this.pos.y);
+    c.fillRect(-this.width / 2, -this.height / 2, this.width, this.height);
+    c.restore();
+  }
+}
+
+function Cursor(visible) {
+  this.pos = new Vector();
+  this.visible = visible;
+  this.update = function() {
+    this.pos.x = canvas.mouseX;
+    this.pos.y = canvas.mouseY;
+  }
+}
+
+function Vector(x, y) {
+  this.x = x || 0;
+  this.y = y || 0;
+  this.add = function(vec) {
+    this.x += vec.x;
+    this.y += vec.y;
+  }
+  this.dampen = function(value) {
+    this.x *= value;
+    this.y *= value;
+  }
+}
+
+function random(min, max) {
+  return Math.random() * (max - min) + min;
+}
+
+function arrayCollision(arrayA, arrayB) {
+  for (var i = 1; i < arrayA.length; i++) {
+    var this1 = arrayA[i];
+    for (var j = 0; j < arrayB.length; j++) {
+      var this2 = arrayB[j];
+      var disX = this2.pos.x - this1.pos.x;
+      var disY = this2.pos.y - this1.pos.y;
+      if (Math.sqrt((disX * disX) + (disY * disY)) < this1.width * 5) {
+        collisionBetween(this1, this2);
+      }
+    }
+  }
+}
+
+function collisionBetween(shapeA, shapeB) {
+  var vX = (shapeA.pos.x) - (shapeB.pos.x),
+    vY = (shapeA.pos.y) - (shapeB.pos.y),
+    hWidths = (shapeA.width / 2) + (shapeB.width / 2),
+    hHeights = (shapeA.height / 2) + (shapeB.height / 2);
+
+  if (Math.abs(vX) < hWidths && Math.abs(vY) < hHeights) {
+    if (shapeB.behaviour == 'player') player.health -= 0.05;
+    if (shapeA.behaviour == 'bullet') {
+      shapeA.alive = false;
+      shapeB.health -= 2;
+      if (shapeB.speed > 1) shapeB.speed -= 0.05;
+    }
+    shapeA.velocity.dampen(0.5);
+    var oX = hWidths - Math.abs(vX),
+      oY = hHeights - Math.abs(vY);
+    if (oX >= oY) {
+      if (vY > 0) shapeA.pos.y += oY - shapeA.velocity.y;
+      else shapeA.pos.y -= oY + shapeA.velocity.y;
+    } else {
+      if (vX > 0) shapeA.pos.x += oX - shapeA.velocity.x;
+      else shapeA.pos.x -= oX + shapeA.velocity.x;
+    }
+  }
+}
+
+document.onmousedown = function(e) {
+  mouseDown = true;
+}
+document.onmouseup = function(e) {
+  mouseDown = false;
+}
+document.ontouchstart = function(e) {
+  e.preventDefault();
+  mouseDown = true;
+}
+document.ontouchmove = function(e) {
+  e.preventDefault();
+  mouseDown = true;
+}
+document.ontouchend = function(e) {
+  e.preventDefault();
+  mouseDown = false;
+}
+
+document.onkeydown = function(e) {
+  if (e.keyCode == 87) upPressed = true;
+  if (e.keyCode == 65) leftPressed = true;
+  if (e.keyCode == 83) downPressed = true;
+  if (e.keyCode == 68) rightPressed = true;
+}
+document.onkeyup = function(e) {
+  if (e.keyCode == 87) upPressed = false;
+  if (e.keyCode == 65) leftPressed = false;
+  if (e.keyCode == 83) downPressed = false;
+  if (e.keyCode == 68) rightPressed = false;
+}
+
+window.onresize = function() {
+  canvas.width = window.innerWidth;
+  canvas.height = window.innerHeight;
+  width = canvas.width;
+  height = canvas.height;
+}
+
+function getMousePos(canvas, evt) {
+  var rect = canvas.getBoundingClientRect();
+  return {
+    x: evt.pageX - rect.left,
+    y: evt.pageY - rect.top
+  };
+}
+canvas.addEventListener('mousemove', function(evt) {
+  var mousePos = getMousePos(canvas, evt);
+  this.mouseX = mousePos.x;
+  this.mouseY = mousePos.y;
+}, true);
+canvas.addEventListener('touchmove', function(evt) {
+  var mousePos = getMousePos(canvas, evt);
+  this.mouseX = mousePos.x;
+  this.mouseY = mousePos.y;
+}, true);
